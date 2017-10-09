@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+# The following script is designed to clean the Vagrant VM in preparation for creation of a new box image
+
+echo -e "Dropping Database Tables..."
+cd /vagrant/laravel
+php artisan droptables
+
+# Remove APT cache
+
+echo -e "Removing APT Cache..."
+sudo apt-get clean
+
+# Zero out empty space
+
+echo -e "Zeroing Out Free Space..."
+sudo dd if=/dev/zero of=/EMPTY bs=1M
+sudo rm -f /EMPTY
+
+# Clear the bash history
+
+echo -e "Clearing Bash History..."
+sudo cat /dev/null > ~/.bash_history && history -c
+
+# Shut the machine down
+
+echo -e "Cleanup complete! To create new Vagrant image please execute the following commands:"
+echo -e ""
+echo -e "   > vagrant package --output fldc-v1.0.box"
+echo -e "   > vagrant box add fldc-v1.0 fldc-v1.0.box"
+echo -e "   > vagrant destroy"
+echo -e ""
+echo -e "Following creation of the new box, please update the \`vagrant.config.default.rb\` and \`vagrant.config.rb\`"
+echo -e "files with the name of the new image. The box image should then be uploaded to an online host so that it is"
+echo -e "accessible to all developers for download when next provisioning."
+
+sudo shutdown now
