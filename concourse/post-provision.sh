@@ -12,7 +12,7 @@ echo "Configuring MySQL..."
 
 usermod -d /var/lib/mysql/ mysql >> /dev/null 2>&1
 service mysql start >> /dev/null 2>&1
-mysql -u root -e "CREATE DATABASE fldc;" >> /dev/null 2>&1
+mysql -u root -e "CREATE DATABASE folding;" >> /dev/null 2>&1
 
 echo "Configuring Laravel..."
 
