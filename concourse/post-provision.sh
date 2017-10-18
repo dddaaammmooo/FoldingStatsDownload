@@ -30,7 +30,6 @@ composer install >> /dev/null 2>&1
 
 echo "NPM Install..."
 
-cp /usr/share/fldc/vagrant/ssh/* ~/.ssh
 /usr/bin/npm run dev >> /dev/null 2>&1
 
 echo ""
