@@ -19,7 +19,11 @@ class ConfigTableSeeder extends Seeder
             ],
             [
                 'token' => 'download.url',
-                'value' => 'http://fah-web.stanford.edu/daily_user_summary.txt.bz2'
+                'value' => 'http://fah-web.stanford.edu/daily_user_summary.txt.bz2',
+            ],
+            [
+                'token' => 'download.timeout',
+                'value' => '300',
             ]
         ];
 

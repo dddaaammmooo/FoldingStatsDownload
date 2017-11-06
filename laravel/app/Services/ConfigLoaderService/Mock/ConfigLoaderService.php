@@ -36,7 +36,8 @@ class ConfigLoaderService implements IConfigLoaderService
         if (!$cache) {
             $this->cacheConfig = [
                 'logging.filename' => 'storage/logs/foldingcoin.log',
-                'download.url' => 'http://fah-web.stanford.edu/daily_user_summary.txt.bz2'
+                'download.url' => 'http://fah-web.stanford.edu/daily_user_summary.txt.bz2',
+                'donwload.timeout' => '300',
             ];
         }
 
