@@ -54,18 +54,7 @@ Vagrant.configure(@config["VAGRANTFILE_API_VERSION"]) do |config|
     # Make machine accessible to the host computer by setting up a private network
     # -----------------------------------------------------------------------------------------------------------------
 
-    # There is an annoying problem with Vagrant where it fails to identify the correct interface names when setting up
-    # the network cards, and it will error out looking for 'eth1' which does not exist. To work around this we have to
-    # disable auto_config on the network interface and manually configure the interface using a provision script.
-
-    config.vm.network :private_network, ip: @config["PRIVATE_NETWORK_IP"], auto_config: false
-
-    # Manually configure private IP address between host and VM
-
-    config.vm.provision "shell",
-        run: "always",
-        args: "#{@config["PRIVATE_NETWORK_IP"]}",
-        inline: "ifconfig enp0s8 $1 netmask 255.255.255.0 up"
+    config.vm.network :private_network, ip: @config["PRIVATE_NETWORK_IP"], auto_config: true
 
     # -----------------------------------------------------------------------------------------------------------------
     # Make machine accessible on public network if required
@@ -76,16 +65,10 @@ Vagrant.configure(@config["VAGRANTFILE_API_VERSION"]) do |config|
         # If a specific NIC was given pass that to prevent Vagrant from asking for a selection
 
         if !@config["PUBLIC_BRIDGE"].nil?
-            config.vm.network :public_network, bridge: @config["PUBLIC_BRIDGE"], auto_config: false
+            config.vm.network :public_network, bridge: @config["PUBLIC_BRIDGE"], auto_config: true
         else
-            config.vm.network :public_network, auto_config: false
+            config.vm.network :public_network, auto_config: true
         end
-
-        # Manually enable public interface and turn on DHCP so we get an IPv4 address
-
-        config.vm.provision "shell",
-            run: "always",
-            inline: "ifconfig enp0s9 up;dhclient enp0s9;"
     end
 
     # -----------------------------------------------------------------------------------------------------------------
