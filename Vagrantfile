@@ -41,7 +41,7 @@ require File.expand_path("#{runPath}/vagrant/helper/config.loader.rb")
 
 Vagrant.configure(@config["VAGRANTFILE_API_VERSION"]) do |config|
 
-    config.vm.box_check_update = false
+    config.vm.box_check_update = true
     config.vm.box = @config["VAGRANT_BOX"]
 
     if !@config["VAGRANT_URL"].nil?
