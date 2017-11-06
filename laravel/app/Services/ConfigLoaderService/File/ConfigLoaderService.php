@@ -19,6 +19,8 @@ class ConfigLoaderService implements IConfigLoaderService
     /** @var array $cacheConfig */
     private $cacheConfig = [];
 
+    const CONFIG_FILENAME = 'app.ini';
+
     /**
      * Define database configuration here
      */
@@ -35,10 +37,15 @@ class ConfigLoaderService implements IConfigLoaderService
      */
     public function getAll(bool $cache = true): array
     {
-        if (!$cache) {
-            try {
-                $this->cacheConfig = unserialize(Storage::get('app.cfg'));
-            } catch (FileNotFoundException $e) {
+        if (!$cache)
+        {
+            try
+            {
+                $content = Storage::get(self::CONFIG_FILENAME);
+                $this->cacheConfig = parse_ini_string($content);
+            }
+            catch (FileNotFoundException $e)
+            {
                 $this->cacheConfig = [];
             }
         }
@@ -50,7 +57,7 @@ class ConfigLoaderService implements IConfigLoaderService
      * Retrieve a number of tokens simultaneously
      *
      * @param array $tokens
-     * @param bool $cache
+     * @param bool  $cache
      * @return array
      * @throws ConfigLoaderServiceException
      */
@@ -58,7 +65,8 @@ class ConfigLoaderService implements IConfigLoaderService
     {
         $returnTokens = [];
 
-        foreach ($tokens as $token) {
+        foreach ($tokens as $token)
+        {
             $returnTokens[$token] = $this->get($token, $cache);
         }
 
@@ -69,13 +77,14 @@ class ConfigLoaderService implements IConfigLoaderService
      * {@inheritDoc}
      *
      * @param string $token
-     * @param bool $cache
+     * @param bool   $cache
      * @throws ConfigLoaderServiceException
      * @return string
      */
     public function get(string $token, bool $cache = true): string
     {
-        if (!isset($this->cacheConfig[$token])) {
+        if (!isset($this->cacheConfig[$token]))
+        {
             throw new ConfigLoaderServiceException("Requested configuration '{$token}' not found");
         }
 
@@ -90,7 +99,8 @@ class ConfigLoaderService implements IConfigLoaderService
      */
     public function setArray(array $tokens): IConfigLoaderService
     {
-        foreach ($tokens as $token => $value) {
+        foreach ($tokens as $token => $value)
+        {
             $this->set($token, $value);
         }
 
@@ -138,11 +148,37 @@ class ConfigLoaderService implements IConfigLoaderService
     }
 
     /**
-     * Convert the array of values to a serialized string and save to disk
+     * Convert the array of values to an INI file and save to disk
      */
     private function persistArray(): void
     {
-        $serializedArray = serialize($this->cacheConfig);
-        Storage::put('app.cfg', $serializedArray);
+        $content = "";
+
+        foreach ($this->cacheConfig as $token => $value)
+        {
+            // Store each array element on new line
+
+            if (is_array($value))
+            {
+                for ($i = 0; $i < count($value); $i++)
+                {
+                    $content .= "{$token}[] = \"{$value[$i]}\"\n";
+                }
+            }
+            elseif ($value == "")
+            {
+                // Blank strings
+
+                $content .= "{$token} = \n";
+            }
+            else
+            {
+                // All other non blank values
+
+                $content .= "{$token} = \"{$value}\"\n";
+            }
+        }
+
+        Storage::put(self::CONFIG_FILENAME, $content);
     }
 }
