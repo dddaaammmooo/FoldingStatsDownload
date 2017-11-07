@@ -37,8 +37,9 @@ class ConfigLoaderService implements IConfigLoaderService
         {
             $this->cacheConfig = [
                 'logging.filename' => 'storage/logs/foldingcoin.log',
-                'download.url'     => 'tests/DownloadService/daily_user_summary.txt.bz2',
+                'download.url'     => 'tests/Data/daily_user_summary.txt.bz2',
                 'download.timeout' => '300',
+                'storage.path'     => 'storage',
             ];
         }
 

@@ -24,7 +24,11 @@ class ConfigTableSeeder extends Seeder
             [
                 'token' => 'download.timeout',
                 'value' => '300',
-            ]
+            ],
+            [
+                'token' => 'storage.path',
+                'value' => 'storage',
+            ],
         ];
 
         DB::table(Config::getTableName())->insert($config);

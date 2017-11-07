@@ -55,7 +55,6 @@ class StatsDownload extends Command
     public function handle()
     {
         $this->loggingService->LogDebug('Beginning stats download');
-
         $result = $this->downloadService->DownloadStats();
 
         if ($result->getResult() == Result::RESULT_SUCCESS)

@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
 
         $this->app->bind(
             \App\Services\Stats\DownloadService\IDownloadService::class,            // Interface
-            \App\Services\Stats\DownloadService\Mock\DownloadService::class         // Concrete Implementation
+            \App\Services\Stats\DownloadService\HTTP\DownloadService::class         // Concrete Implementation
         );
 
         // Stats cleanup service
@@ -52,6 +52,13 @@ class AppServiceProvider extends ServiceProvider
             \App\Services\LoggingService\ILoggingService::class,
             \App\Services\LoggingService\File\LoggingService::class
         );
+
+        // Storage service
+
+        $this->app->bind(
+            \App\Services\Stats\StorageService\IStorageService::class,
+            \App\Services\Stats\StorageService\Local\StorageService::class
+        );        
 
         // Config loader service
 
