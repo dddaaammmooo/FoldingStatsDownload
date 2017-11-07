@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+processes=$(ps aux | grep ruby -i | awk -F ' ' '{print $2}' | xargs)
+for i in $processes; do
+    sudo kill -9 $i;
+done
