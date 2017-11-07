@@ -9,7 +9,6 @@ use App\Services\Stats\DownloadService\AbstractDownloadService;
 use App\Services\Stats\DownloadService\IDownloadService;
 use App\Services\Stats\DownloadService\Result;
 use App\Services\StorageService\IStorageService;
-use App\Services\StorageService\Status;
 use Exception;
 use GuzzleHttp\Client as GuzzleHttpClient;
 
@@ -83,7 +82,20 @@ class DownloadService extends AbstractDownloadService implements IDownloadServic
 
         // Download the file from the URL stored in service configuration file
 
-        $urls = $this->getDownloadUrls();
+        $scheme = strtolower(parse_url($this->downloadUrl, PHP_URL_SCHEME));
+
+        if ($scheme == "https")
+        {
+            // If they have specified HTTPS, only allow HTTPS
+
+            $urls = [$this->downloadUrl];
+        }
+        else
+        {
+            // Otherwise, try HTTPS first then fall back to HTTP
+
+            $urls = $this->getDownloadUrls();
+        }
 
         // Iterate all of the URLS in order (i.e. HTTPS first, then HTTP)
 
@@ -93,15 +105,18 @@ class DownloadService extends AbstractDownloadService implements IDownloadServic
 
             // If we are trying HTTPS, force all redirects to stay HTTPS
 
-            if ($scheme == "https") {
-                $options = array_merge($options, [
-                    'allow_redirects' => [
-                        'max'             => 5,         // Allow at most 5 redirects
-                        'strict'          => true,      // Use "strict" RFC compliant redirects
-                        'referer'         => true,      // Add a referer header
-                        'protocols'       => ['https'], // Only allow redirects to other HTTPS URLs
-                    ]
-                ]);
+            if ($scheme == "https")
+            {
+                $options = array_merge(
+                    $options, [
+                                'allow_redirects' => [
+                                    'max'       => 5,         // Allow at most 5 redirects
+                                    'strict'    => true,      // Use "strict" RFC compliant redirects
+                                    'referer'   => true,      // Add a referer header
+                                    'protocols' => ['https'], // Only allow redirects to other HTTPS URLs
+                                ],
+                            ]
+                );
             }
 
             $this->loggingService->LogDebug("Attempting download from: {$url}");
@@ -109,7 +124,9 @@ class DownloadService extends AbstractDownloadService implements IDownloadServic
             try
             {
                 $httpResult = $this->client->request('GET', $url, $options);
-            } catch (Exception $e) {
+            }
+            catch (Exception $e)
+            {
                 $this->loggingService->LogDebug("Unexpected exception while downloading: {$e->getMessage()}");
                 continue;
             }
@@ -160,9 +177,11 @@ class DownloadService extends AbstractDownloadService implements IDownloadServic
 
         $url = "";
 
-        if (!empty($user)) {
+        if (!empty($user))
+        {
             $url .= $user;
-            if (!empty($password)) {
+            if (!empty($password))
+            {
                 $url .= ":{$password}";
             }
 
@@ -171,23 +190,26 @@ class DownloadService extends AbstractDownloadService implements IDownloadServic
 
         $url .= $host;
 
-        if (!empty($port)) {
+        if (!empty($port))
+        {
             $url .= ":{$port}";
         }
 
         $url .= $path;
 
-        if (!empty($query)) {
+        if (!empty($query))
+        {
             $url .= "?{$query}";
         }
 
-        if (!empty($fragment)) {
+        if (!empty($fragment))
+        {
             $url .= "#{$fragment}";
         }
 
         return [
             "https" => "https://{$url}",
-            "http" => "http://{$url}",
+            "http"  => "http://{$url}",
         ];
     }
 }
