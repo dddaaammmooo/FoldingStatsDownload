@@ -56,8 +56,8 @@ class AppServiceProvider extends ServiceProvider
         // Storage service
 
         $this->app->bind(
-            \App\Services\Stats\StorageService\IStorageService::class,
-            \App\Services\Stats\StorageService\Local\StorageService::class
+            \App\Services\StorageService\IStorageService::class,
+            \App\Services\StorageService\Local\StorageService::class
         );        
 
         // Config loader service

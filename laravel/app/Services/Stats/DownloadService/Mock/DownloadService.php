@@ -8,7 +8,7 @@ use App\Services\LoggingService\ILoggingService;
 use App\Services\Stats\DownloadService\AbstractDownloadService;
 use App\Services\Stats\DownloadService\IDownloadService;
 use App\Services\Stats\DownloadService\Result;
-use App\Services\Stats\StorageService\IStorageService;
+use App\Services\StorageService\IStorageService;
 use Illuminate\Support\Facades\App;
 
 /**
