@@ -10,6 +10,7 @@ use App\Services\Stats\DownloadService\IDownloadService;
 use App\Services\Stats\DownloadService\Result;
 use App\Services\StorageService\IStorageService;
 use App\Services\StorageService\Status;
+use Exception;
 use GuzzleHttp\Client as GuzzleHttpClient;
 
 /**
@@ -80,30 +81,113 @@ class DownloadService extends AbstractDownloadService implements IDownloadServic
         $this->timerStart();
         $this->loggingService->LogDebug("Download started");
 
-        // Download the file from the URL storage in service configuration file
+        // Download the file from the URL stored in service configuration file
 
-        $httpResult = $this->client->request('GET', $this->downloadUrl, $this->clientOptions);
+        $urls = $this->getDownloadUrls();
 
-        // Make sure the HTTP request response code indicates can contain a body
+        // Iterate all of the URLS in order (i.e. HTTPS first, then HTTP)
 
-        $statusCode = $httpResult->getStatusCode();
-        $statusMessage = StatusCodes::getMessage($statusCode);
-
-        $this->loggingService->LogDebug("HTTP status code: {$statusCode} - {$statusMessage}");
-
-        if (!StatusCodes::canHaveBody($statusCode))
+        foreach ($urls as $scheme => $url)
         {
-            // Did not receive an acceptable HTTP response code
+            $options = $this->clientOptions;
 
-            $result->setResult(Result::RESULT_ERROR);
-            $result->setDescription("Error: Unexpected HTTP response code received while downloading");
+            // If we are trying HTTPS, force all redirects to stay HTTPS
 
-            return $result;
+            if ($scheme == "https") {
+                $options = array_merge($options, [
+                    'allow_redirects' => [
+                        'max'             => 5,         // Allow at most 5 redirects
+                        'strict'          => true,      // Use "strict" RFC compliant redirects
+                        'referer'         => true,      // Add a referer header
+                        'protocols'       => ['https'], // Only allow redirects to other HTTPS URLs
+                    ]
+                ]);
+            }
+
+            $this->loggingService->LogDebug("Attempting download from: {$url}");
+
+            try
+            {
+                $httpResult = $this->client->request('GET', $url, $options);
+            } catch (Exception $e) {
+                $this->loggingService->LogDebug("Unexpected exception while downloading: {$e->getMessage()}");
+                continue;
+            }
+
+            // Make sure the HTTP request response code indicates can contain a body
+
+            $statusCode = $httpResult->getStatusCode();
+            $statusMessage = StatusCodes::getMessage($statusCode);
+
+            $this->loggingService->LogDebug("HTTP status code: {$statusCode} - {$statusMessage}");
+
+            if (!StatusCodes::canHaveBody($statusCode))
+            {
+                // Did not receive an acceptable HTTP response code, skip to the next URL in the array
+
+                $this->loggingService->LogDebug("Unexpected HTTP response code received while downloading");
+                continue;
+            }
+
+            $this->timerStop();
+            $this->loggingService->LogDebug("Download finished (" . $this->timerGetDuration() . " seconds)");
+
+            return $this->persistToStorage($httpResult->getBody()->getContents());
         }
 
-        $this->timerStop();
-        $this->loggingService->LogDebug("Download finished (" . $this->timerGetDuration() . " seconds)");
+        // Neither HTTPS/HTTP URL was successful
 
-        return $this->persistToStorage($httpResult->getBody()->getContents());
+        $result->setResult(Result::RESULT_ERROR);
+        $result->setDescription("Error: Unexpected HTTP response code received while downloading");
+
+        return $result;
+    }
+
+    /**
+     * Decompose the download URL and construct an array with HTTPS & HTTP variants
+     *
+     * @return array
+     */
+    private function getDownloadUrls(): array
+    {
+        $user = parse_url($this->downloadUrl, PHP_URL_USER);
+        $password = parse_url($this->downloadUrl, PHP_URL_PASS);
+        $host = parse_url($this->downloadUrl, PHP_URL_HOST);
+        $port = parse_url($this->downloadUrl, PHP_URL_PORT);
+        $path = parse_url($this->downloadUrl, PHP_URL_PATH);
+        $query = parse_url($this->downloadUrl, PHP_URL_QUERY);
+        $fragment = parse_url($this->downloadUrl, PHP_URL_FRAGMENT);
+
+        $url = "";
+
+        if (!empty($user)) {
+            $url .= $user;
+            if (!empty($password)) {
+                $url .= ":{$password}";
+            }
+
+            $url .= "@";
+        }
+
+        $url .= $host;
+
+        if (!empty($port)) {
+            $url .= ":{$port}";
+        }
+
+        $url .= $path;
+
+        if (!empty($query)) {
+            $url .= "?{$query}";
+        }
+
+        if (!empty($fragment)) {
+            $url .= "#{$fragment}";
+        }
+
+        return [
+            "https" => "https://{$url}",
+            "http" => "http://{$url}",
+        ];
     }
 }
