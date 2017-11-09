@@ -12,7 +12,7 @@
 {
   "VAGRANTFILE_API_VERSION"     => "2",
   "VAGRANT_BOX"                 => "bento/ubuntu-17.04",
-  "VAGRANT_URL"                 => "",
+  "VAGRANT_URL"                 => nil,
   "VAGRANT_HOSTNAME"            => "vagrant-fldc",
 
   "LINUX_VERSION"               => "ubuntu-1704",

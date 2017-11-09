@@ -33,9 +33,12 @@ class ConfigLoaderService implements IConfigLoaderService
      */
     public function getAll(bool $cache = true): array
     {
-        if (!$cache) {
+        if (!$cache)
+        {
             $this->cacheConfig = [
                 'logging.filename' => 'storage/logs/foldingcoin.log',
+                'download.url'     => 'tests/DownloadService/daily_user_summary.txt.bz2',
+                'download.timeout' => '300',
             ];
         }
 
@@ -46,7 +49,7 @@ class ConfigLoaderService implements IConfigLoaderService
      * Retrieve a number of tokens simultaneously
      *
      * @param array $tokens
-     * @param bool $cache
+     * @param bool  $cache
      * @return array
      * @throws ConfigLoaderServiceException
      */
@@ -54,7 +57,8 @@ class ConfigLoaderService implements IConfigLoaderService
     {
         $returnTokens = [];
 
-        foreach ($tokens as $token) {
+        foreach ($tokens as $token)
+        {
             $returnTokens[$token] = $this->get($token, $cache);
         }
 
@@ -65,13 +69,14 @@ class ConfigLoaderService implements IConfigLoaderService
      * {@inheritDoc}
      *
      * @param string $token
-     * @param bool $cache
+     * @param bool   $cache
      * @throws ConfigLoaderServiceException
      * @return string
      */
     public function get(string $token, bool $cache = true): string
     {
-        if (!isset($this->cacheConfig[$token])) {
+        if (!isset($this->cacheConfig[$token]))
+        {
             throw new ConfigLoaderServiceException("Requested configuration '{$token}' not found");
         }
 
@@ -86,7 +91,8 @@ class ConfigLoaderService implements IConfigLoaderService
      */
     public function setArray(array $tokens): IConfigLoaderService
     {
-        foreach ($tokens as $token => $value) {
+        foreach ($tokens as $token => $value)
+        {
             $this->set($token, $value);
         }
 

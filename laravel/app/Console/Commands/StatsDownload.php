@@ -36,7 +36,7 @@ class StatsDownload extends Command
      * Load dependencies
      *
      * @param IDownloadService $downloadService
-     * @param ILoggingService $loggingService
+     * @param ILoggingService  $loggingService
      */
     public function __construct(
         IDownloadService $downloadService,
@@ -58,11 +58,14 @@ class StatsDownload extends Command
 
         $result = $this->downloadService->DownloadStats();
 
-        if ($result->getResult() == Result::RESULT_SUCCESS) {
+        if ($result->getResult() == Result::RESULT_SUCCESS)
+        {
             $this->loggingService->LogDebug(Lang::get('statsDownload.success'));
-            $this->info(Lang::get('statsDownload.success'));
-        } elseif ($result->getResult() == Result::RESULT_SUCCESS) {
+        }
+        elseif ($result->getResult() == Result::RESULT_ERROR)
+        {
             $this->loggingService->logError(Lang::get('statsDownload.error'));
+            $this->loggingService->logError($result->getDescription());
         }
     }
 }
